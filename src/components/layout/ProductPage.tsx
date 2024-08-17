@@ -11,7 +11,6 @@ import { decode } from 'html-entities';
 
 interface ProductPageProps {
     product_url: string;
-    price_range: PriceRange
 }
 
 const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
