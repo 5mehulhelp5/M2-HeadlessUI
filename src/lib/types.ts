@@ -75,28 +75,8 @@ export interface ProductData {
   description: {
     html: string;
   };
-  price_range: {
-    minimum_price: {
-      regular_price: {
-        value: string;
-        currency: string;
-      };
-      final_price: {
-        value: string;
-        currency: string;
-      };
-    };
-    maximum_price: {
-      regular_price: {
-        value: string;
-        currency: string;
-      };
-      final_price: {
-        value: string;
-        currency: string;
-      };
-    };
-  };
+  price_range: PriceRange;
+  __typename: string;
 }
 export interface ProductImage {
   url: string;

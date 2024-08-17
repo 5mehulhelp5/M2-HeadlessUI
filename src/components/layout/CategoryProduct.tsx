@@ -9,6 +9,7 @@ import SkeletonLoader from '@/components/skelton/SkeletonLoader';
 import Price from '../object/Price';
 import ConfigurableOptions from '../object/ConfigurableOption';
 import SidebarFilter from '../object/SidebarFilter';
+import {decode} from 'html-entities';
 
 interface CategoryProductProps {
     category_id: number;
@@ -129,7 +130,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                 </div>
                                                 <div className="product-card-details relative">
                                                     <Link href={`/${product.url_key}`}>
-                                                        <h3 className="mt-2 mb-0 text-md font-medium text-gray-700">{product.name}</h3>
+                                                        <h3 className="mt-2 mb-0 text-md font-medium text-gray-700">{decode(product.name, {level: 'html5'})}</h3>
                                                     </Link>
                                                     <div className="flex gap-2 items-end">
                                                         <p className="mt-1 text-md font-medium text-primary">

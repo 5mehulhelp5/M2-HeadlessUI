@@ -4,11 +4,14 @@ import Image from 'next/image';
 import Head from 'next/head'; // Import Head component
 import magentoGraphQl from '../../lib/magento/graphQl/magentoGraphQl';
 import { getProductData } from '../../lib/magento/queries/product';
-import { ProductData } from '../../lib/types';
+import { ProductData, PriceRange } from '../../lib/types';
+import Price from '../object/Price';
 import ProductPageSkeleton from '../skelton/ProductPageSkeleton';
+import { decode } from 'html-entities';
 
 interface ProductPageProps {
     product_url: string;
+    price_range: PriceRange
 }
 
 const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
@@ -50,7 +53,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
     const schema = {
         "@context": "https://schema.org",
         "@type": "Product",
-        "name": product.name,
+        "name": decode(product.name),
         "image": product.small_image.url,
         "description": product.short_description.html,
         "sku": product.sku,
@@ -75,9 +78,9 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
     return (
         <>
             <Head>
-                <title>{product.name} - My Store</title>
+                <title>{decode(product.name)} - My Store</title>
                 <meta name="description" content={product.short_description.html || 'Product description not available'} />
-                <meta property="og:title" content={product.name} />
+                <meta property="og:title" content={decode(product.name)} />
                 <meta property="og:description" content={product.short_description.html || 'Product description not available'} />
                 <meta property="og:image" content={product.small_image.url} />
                 <meta property="og:url" content={`https://www.mystore.com/product/${product_url}`} />
@@ -113,11 +116,11 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
                         </div>
                     </div>
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+                        <h1 className="text-3xl font-bold mb-2">{decode(product.name)}</h1>
                         <p className="text-lg text-gray-700 mb-4">{product.sku}</p>
                         <div className="flex items-center mb-4">
                             <span className="text-xl font-semibold mr-2">
-                                {product.price_range.minimum_price.final_price.value} {product.price_range.minimum_price.final_price.currency}
+                                <Price minimum_price={product.price_range.minimum_price} maximum_price={product.price_range.maximum_price} __typename={product.price_range.__typename} />
                             </span>
                             <span className="text-sm text-gray-500 line-through">
                                 {product.price_range.maximum_price.regular_price.value} {product.price_range.maximum_price.regular_price.currency}
