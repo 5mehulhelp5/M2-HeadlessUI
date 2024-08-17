@@ -101,10 +101,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
                         <div className="mt-4 flex gap-4 overflow-x-auto">
                             {product.media_gallery.map((media) => (
                                 <button key={media.url} onClick={() => setSelectedImage(media.url)} className="flex-shrink-0">
-                                    <img
+                                    <Image
                                         src={media.url}
                                         alt={media.label}
                                         className="w-24 h-24 object-cover rounded-lg shadow-md"
+                                        width={96}
+                                        height={96}
                                     />
                                 </button>
                             ))}
