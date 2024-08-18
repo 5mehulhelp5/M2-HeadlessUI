@@ -8,6 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',  // Extra small devices
+        'sm': '640px',  // Small devices (default Tailwind breakpoint)
+        'md': '768px',  // Medium devices (default Tailwind breakpoint)
+        'lg': '1024px', // Large devices (default Tailwind breakpoint)
+        'xl': '1280px', // Extra large devices (default Tailwind breakpoint)
+        '2xl': '1536px',// 2X large devices (default Tailwind breakpoint)
+      },
       colors: {
         primary: '#FF0000', // Add your red color here
       },

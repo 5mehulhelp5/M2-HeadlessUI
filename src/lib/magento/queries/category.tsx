@@ -85,7 +85,7 @@ export function getCategoryProduct() {
     }
   `
 }
-export const filterProductWIthAttribute = `query ProductSearch(
+export const ProductSearch = `query ProductSearch(
   $currentPage: Int = 1, 
   $inputText: String!, 
   $pageSize: Int = 6, 

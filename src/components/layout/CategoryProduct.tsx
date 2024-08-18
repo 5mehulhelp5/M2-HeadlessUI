@@ -6,10 +6,13 @@ import getProductFilterByCategory from '@/lib/magento/queries/getProductFilterBy
 import { useState, useEffect, use } from 'react';
 import { ProductOfCategory } from '@/lib/types';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
+import PageLoader from '@/components/skelton/PageLoader';
 import Price from '../object/Price';
 import ConfigurableOptions from '../object/ConfigurableOption';
 import SidebarFilter from '../object/SidebarFilter';
-import {decode} from 'html-entities';
+import { decode } from 'html-entities';
+import { ProductSearch } from '@/lib/magento/queries/category';
+import { transformDataIntoFilter } from '@/lib/magento/function/MakeSIdebarFilter'
 
 interface CategoryProductProps {
     category_id: number;
@@ -18,51 +21,104 @@ interface CategoryProductProps {
 export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const [productCache, setProductCache] = useState<{ [page: string]: ProductOfCategory[] }>({});
     const [loading, setLoading] = useState<boolean>(true);
+    const [pageLoader, setPageLoader] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [page, setPage] = useState<number>(1);
     const [sortData, setSortData] = useState<string>('position');
     const [categoryFilter, setCategoryFilter] = useState(null);
     const [mobileSidebar, setMobileSidebar] = useState<boolean>(false);
+    const [sidebarFilter, setSidebarFilter] = useState<Record<string, string[]> | null>(null);
+    const [filterCounter, setFilterCounter] = useState<number>(0);
+    const [currentCategoryId, setCurrentCategoryId] = useState<number>(category_id);
     const perPageProduct = 8;
     const totalPages = Math.ceil(totalCount / perPageProduct);
-    const cacheKey: string = `${page}-${sortData}`;
-
+    var cacheKey: string = `${page}-${sortData}-${filterCounter.toString()}`;
+    async function fetchProducts(fetchFunction: () => Promise<void>, loader: (state: boolean) => void) {
+        loader(true); // Start loading
+        await fetchFunction();
+        loader(false); // End loading
+    }
+    
+    async function CategoryDataget() {
+        try {
+            const response = await magentoGraphQl(
+                '',
+                'getProductFilterByCategory',
+                getProductFilterByCategory(),
+                { categoryIdFilter: { eq: category_id }, pageSize: perPageProduct, currentPage: page, sort: { [sortData]: 'ASC' } }
+            );
+            const fetchedProducts = response.data?.products?.items || [];
+    
+            // Update the cache with the new products
+            setProductCache(prevCache => ({
+                ...prevCache,
+                [cacheKey]: fetchedProducts,
+            }));
+            setTotalCount(response.data?.products?.total_count || 0);
+            if (!categoryFilter) {
+                setCategoryFilter(response.data?.products?.aggregations);
+            }
+        } catch (err) {
+            setError('Failed to fetch products');
+        }
+    }
+    
+    async function fetchProductsWithFilter() {
+        if (!sidebarFilter) return;
+        
+        const filterFromFunction = transformDataIntoFilter(sidebarFilter);
+        if (!filterFromFunction) {
+            await CategoryDataget();
+            return;
+        }
+        
+        filterFromFunction['category_id'] = { eq: currentCategoryId };
+        
+        try {
+            const response = await magentoGraphQl(
+                '',
+                'ProductSearch',
+                ProductSearch,
+                {
+                    currentPage: 1,
+                    filters: filterFromFunction,
+                    inputText: "",
+                    pageSize: perPageProduct,
+                    sort: { [sortData]: 'ASC' }
+                }
+            );
+            const fetchedProducts = response.data?.products?.items || [];
+            setProductCache(prevCache => ({
+                ...prevCache,
+                [cacheKey]: fetchedProducts,
+            }));
+            setTotalCount(response.data?.products?.total_count || 0);
+        } catch (err) {
+            setError('Failed to fetch products');
+        }
+    }
+    
     useEffect(() => {
-        const fetchProducts = async () => {
-            if (productCache[cacheKey]) {
-                // If data for this page is already cached, use it and don't fetch again
-                setLoading(false);
-                return;
-            }
-
-            try {
-                setLoading(true); // Start loading
-                const response = await magentoGraphQl(
-                    '',
-                    'getProductFilterByCategory',
-                    getProductFilterByCategory(),
-                    { categoryIdFilter: { eq: category_id }, pageSize: perPageProduct, currentPage: page, sort: { [sortData]: 'ASC' } }
-                );
-                const fetchedProducts = response.data?.products?.items || [];
-
-                // Update the cache with the new products
-                setProductCache(prevCache => ({
-                    ...prevCache,
-                    [cacheKey]: fetchedProducts,
-                }));
-                setTotalCount(response.data?.products?.total_count || 0);
-                categoryFilter == null ? setCategoryFilter(response.data?.products?.aggregations) : '';
-            } catch (err) {
-                setError('Failed to fetch products');
-            } finally {
-                setLoading(false); // End loading
-            }
-        };
-
-        fetchProducts();
-    }, [category_id, page, sortData]);
-
+        const shouldFetch = !productCache[cacheKey];
+    
+        if (shouldFetch) {
+            fetchProducts(CategoryDataget, setLoading);
+        }
+    }, [category_id]);
+    
+    useEffect(() => {
+        const shouldFetch = !productCache[cacheKey];
+    
+        if (shouldFetch) {
+            fetchProducts(CategoryDataget, setPageLoader);
+        }
+    }, [page, sortData]);
+    
+    useEffect(() => {
+        fetchProducts(fetchProductsWithFilter, setPageLoader);
+    }, [sidebarFilter]);
+    
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
     };
@@ -70,25 +126,27 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     if (loading) return <SkeletonLoader />;
     if (error) return <div className="col-span-full text-center text-red-500">{error}</div>;
 
-    const products = productCache[cacheKey] || [];
-    console.log(JSON.stringify(categoryFilter));
+    const products = productCache[cacheKey] ?? Object.values(productCache).pop();
+
+
     return (
         <>
             {mobileSidebar && (
-                <div className="false w-full h-screen bg-black bg-opacity-40 z-40 left-0 top-0 fixed" onClick={()=>setMobileSidebar(!mobileSidebar)}></div>
+                <div className="false w-full h-screen bg-black bg-opacity-40 z-40 left-0 top-0 fixed" onClick={() => setMobileSidebar(!mobileSidebar)}></div>
             )}
             <div className="flex">
-                <div className={`${mobileSidebar == true ? 'left-0':'-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-5`}>
+                <div className={`${mobileSidebar == true ? 'left-0' : '-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-5`}>
                     <div className="lg:mt-2">
                         <div className="layered pt-4 px-3 lg:px-4 lg:py-3">
                             {/* Your sidebar content here */}
                             {categoryFilter && (
-                                <SidebarFilter filters={categoryFilter} />
+                                <SidebarFilter filters={categoryFilter} setSidebarFilter={setSidebarFilter} />
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="w-full">
+                    {pageLoader && (<PageLoader />)}
                     <div className="mt-2">
                         <div className="flex justify-between items-center py-2">
                             <div>
@@ -96,7 +154,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                             </div>
                             <div className="flex gap-2 items-center">
                                 <div className="border px-2 py-1.5 block lg:hidden">
-                                    <button onClick={()=>setMobileSidebar(!mobileSidebar)}>
+                                    <button onClick={() => setMobileSidebar(!mobileSidebar)}>
                                         <svg className="stroke-gray-600 font-extralight" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"></path></svg>
                                     </button>
                                 </div>
@@ -130,7 +188,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                 </div>
                                                 <div className="product-card-details relative">
                                                     <Link href={`/${product.url_key}`}>
-                                                        <h3 className="mt-2 mb-0 text-md font-medium text-gray-700">{decode(product.name, {level: 'html5'})}</h3>
+                                                        <h3 className="mt-2 mb-0 text-md font-medium text-gray-700">{decode(product.name, { level: 'html5' })}</h3>
                                                     </Link>
                                                     <div className="flex gap-2 items-end">
                                                         <p className="mt-1 text-md font-medium text-primary">
@@ -138,7 +196,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                         </p>
                                                     </div>
                                                     {/* configuration option  */}
-                                                    {product.type_id === 'configurable' && (
+                                                    {product.type_id === 'configurable' && product.configurable_options && (
                                                         <div className="pb-12">
                                                             <ConfigurableOptions options={product.configurable_options} />
                                                         </div>

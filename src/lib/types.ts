@@ -179,5 +179,6 @@ export interface FilterCategories {
 
 export interface SidebarFilterProps {
   filters: FilterCategories[];
+  setSidebarFilter:any
 }
   
