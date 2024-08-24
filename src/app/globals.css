@@ -46,3 +46,22 @@ body {
     background-color: #e0e0e0;
   }
 }
+
+.mySwiper .swiper-slide-thumb-active {
+  border:0.5px solid black;
+  border-radius: 4px;
+}
+.mySwiper .swiper-slide{
+  margin-left: 5px;
+  cursor: pointer;
+}
+.product-gallery.swiper .swiper-button-prev::after{
+ padding: 10px;
+ border-radius: 15px;
+ background-color: #f5d9d9;
+}
+.product-gallery.swiper .swiper-button-next::after{
+  padding: 10px;
+  border-radius: 15px;
+  background-color: #f5d9d9;
+ }

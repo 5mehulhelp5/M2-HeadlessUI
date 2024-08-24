@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import magentoGraphQl from '@/lib/magento/graphQl/magentoGraphQl';
 import getProductFilterByCategory from '@/lib/magento/queries/getProductFilterByCategory';
-import { useState, useEffect, use } from 'react';
-import { ProductOfCategory } from '@/lib/types';
+import { useState, useEffect, useCallback } from 'react';
+import { ProductOfCategory ,Variant,Attribute } from '@/lib/types';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
 import PageLoader from '@/components/skelton/PageLoader';
 import Price from '../object/Price';
@@ -39,7 +39,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         await fetchFunction();
         loader(false); // End loading
     }
-    
+
     async function CategoryDataget() {
         try {
             const response = await magentoGraphQl(
@@ -49,7 +49,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                 { categoryIdFilter: { eq: category_id }, pageSize: perPageProduct, currentPage: page, sort: { [sortData]: 'ASC' } }
             );
             const fetchedProducts = response.data?.products?.items || [];
-    
+
             // Update the cache with the new products
             setProductCache(prevCache => ({
                 ...prevCache,
@@ -63,18 +63,18 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             setError('Failed to fetch products');
         }
     }
-    
-    async function fetchProductsWithFilter() {
+
+    const fetchProductsWithFilter = useCallback(async () => {
         if (!sidebarFilter) return;
-        
+    
         const filterFromFunction = transformDataIntoFilter(sidebarFilter);
         if (!filterFromFunction) {
             await CategoryDataget();
             return;
         }
-        
+    
         filterFromFunction['category_id'] = { eq: currentCategoryId };
-        
+    
         try {
             const response = await magentoGraphQl(
                 '',
@@ -97,28 +97,27 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         } catch (err) {
             setError('Failed to fetch products');
         }
-    }
-    
+    }, [sidebarFilter, CategoryDataget, cacheKey, currentCategoryId, perPageProduct, sortData]);
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
-    
+
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setLoading);
         }
     }, [category_id]);
-    
+
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
-    
+
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setPageLoader);
         }
     }, [page, sortData]);
-    
+
     useEffect(() => {
         fetchProducts(fetchProductsWithFilter, setPageLoader);
     }, [sidebarFilter]);
-    
+
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
     };
@@ -127,8 +126,6 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     if (error) return <div className="col-span-full text-center text-red-500">{error}</div>;
 
     const products = productCache[cacheKey] ?? Object.values(productCache).pop();
-
-
     return (
         <>
             {mobileSidebar && (
@@ -198,10 +195,9 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                     {/* configuration option  */}
                                                     {product.type_id === 'configurable' && product.configurable_options && (
                                                         <div className="pb-12">
-                                                            <ConfigurableOptions options={product.configurable_options} />
+                                                            <ConfigurableOptions options={product.configurable_options} isProductPage={false} />
                                                         </div>
                                                     )}
-
                                                     {/* Add to cart button */}
                                                     <div className="sm:flex hidden justify-between gap-1 absolute w-full h-10 left-0 -bottom-[120px] group-hover:bottom-[2px] transition-all duration-300 ease-in-out bg-white">
                                                         {product.type_id == "downloadable" && (
@@ -247,53 +243,61 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             </div>
         </>
     );
-
+    
+    interface AddToCartPayload {
+        parentSku: string;
+        sku: string;
+        quantity: number;
+        cartId: string | null;
+    }
+    
     function handleAddToCart(event: React.FormEvent<HTMLFormElement>, productId: number) {
         event.preventDefault();
-
-        // Create a new FormData object to collect input data from the form
+    
         const formData = new FormData(event.currentTarget);
-
-        // Convert FormData entries to a key-value object, filtering for checked inputs
         const formValues: Record<string, FormDataEntryValue> = {};
-
-        // Track if any required radio input is missing a selection
+    
         let missingRadioSelection = false;
-
-        // Get all radio inputs in the form
-        const radioInputs = event.currentTarget.querySelectorAll('input[type="radio"]');
-
-        // Check if there are any radio inputs
-        if (radioInputs.length > 0) {
-            const radioNames = new Set<string>();
-            radioInputs.forEach((input: any) => {
-                radioNames.add(input?.name);
-            });
-
-            radioNames.forEach((name) => {
-                const selectedRadio = event.currentTarget.querySelector(`input[name="${name}"]:checked`);
-                if (!selectedRadio) {
-                    missingRadioSelection = true;
-                }
-            });
-        }
-
-        // If any radio button group has no selected option, show an alert and stop the process
+    
+        const radioInputs = Array.from(event.currentTarget.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
+    
+        // Check for missing radio selections
+        const radioNames = new Set(radioInputs.map(input => input.name));
+        radioNames.forEach(name => {
+            if (!event.currentTarget.querySelector(`input[name="${name}"]:checked`)) {
+                missingRadioSelection = true;
+            }
+        });
+    
         if (missingRadioSelection) {
             alert('Please select all required options before adding the product to the cart.');
             return;
         }
-
-        // Continue to collect form data
+    
+        // Collect form data
         formData.forEach((value, key) => {
             formValues[key] = value;
         });
-
-        // Log the collected form values
-        console.log('Form data:', formValues);
-
-        // Implement your add-to-cart logic here, using the productId and formValues
-        console.log('Adding product to cart:', productId, formValues);
+    
+        const product = products.find(product => product.id === productId);
+        if (!product) {
+            console.error('Product not found');
+            return;
+        }
+        const matchingVariant = product.variants?.find((variant:Variant) =>
+            Object.entries(formValues).every(([key, value]) =>
+                variant.attributes.some((attr: Attribute)=> attr.code === key && attr.value_index == value)
+            )
+        );
+    
+        const addToCartPayload: AddToCartPayload = {
+            parentSku: product.sku,
+            sku: matchingVariant?.product.sku || 'No matching product found',
+            quantity: 1,
+            cartId: null
+        };
+    
+        console.log(addToCartPayload);
     }
-
+    
 }
