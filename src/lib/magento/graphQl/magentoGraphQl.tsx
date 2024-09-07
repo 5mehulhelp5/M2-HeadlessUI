@@ -1,6 +1,6 @@
 import axios from 'axios';
 const magentoGraphQl = async (endpoint:string,operationName:any,query: string, variables: any) => {
-  endpoint = endpoint || '/api/graphql';
+  endpoint = endpoint || '/api/graphql/';
   try {
     const { data } = await axios.post(endpoint, {
       operationName,

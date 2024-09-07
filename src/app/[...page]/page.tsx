@@ -6,6 +6,7 @@ import { getProductId } from '@/lib/magento/queries/product';
 import ProductPage from '@/components/layout/ProductPage';
 import ProductPageSkeleton from '@/components/skelton/ProductPageSkeleton';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
+import { Suspense } from 'react';
 
 const endpoint = `${process.env.M2_STORE_URl}/graphql`;
 
@@ -41,32 +42,18 @@ export default async function Page({ params }: { params: { page: string[] } }) {
     loadingCategory = false;
     loadingProduct = false;
   }
-
-  if (loadingCategory) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {Array(8).fill(null).map((_, index) => (
-          <SkeletonLoader key={index} />
-        ))}
-      </div>
-    );
-  }
-
-  if (loadingProduct) {
-    return <ProductPageSkeleton />;
-  }
-
   if (error) {
     return <div className="text-red-600">Error occurred. Please try again.</div>;
   }
-
   return (
     <>
-      {data?.type === 'category' ? (
-        <CategoryProduct category_id={data.data.categoryList[0].id} />
-      ) : (
-        <ProductPage product_url={url_key} />
-      )}
+      <Suspense fallback={loadingCategory ? <SkeletonLoader /> : <ProductPageSkeleton />}>
+        {data?.type === 'category' ? (
+          <CategoryProduct category_id={data.data.categoryList[0].id} />
+        ) : (
+          <ProductPage product_url={url_key} />
+        )}
+      </Suspense>
     </>
   );
 }

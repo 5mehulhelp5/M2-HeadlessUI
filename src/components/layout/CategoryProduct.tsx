@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import magentoGraphQl from '@/lib/magento/graphQl/magentoGraphQl';
 import getProductFilterByCategory from '@/lib/magento/queries/getProductFilterByCategory';
-import { useState, useEffect, useCallback } from 'react';
-import { ProductOfCategory ,Variant,Attribute } from '@/lib/types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { ProductOfCategory, Variant, Attribute } from '@/lib/types';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
 import PageLoader from '@/components/skelton/PageLoader';
 import Price from '../object/Price';
@@ -12,16 +12,18 @@ import ConfigurableOptions from '../object/ConfigurableOption';
 import SidebarFilter from '../object/SidebarFilter';
 import { decode } from 'html-entities';
 import { ProductSearch } from '@/lib/magento/queries/category';
-import { transformDataIntoFilter } from '@/lib/magento/function/MakeSIdebarFilter'
+import { transformDataIntoFilter } from '@/lib/magento/function/MakeSIdebarFilter';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface CategoryProductProps {
     category_id: number;
+    page?: number;
 }
 
 export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const [productCache, setProductCache] = useState<{ [page: string]: ProductOfCategory[] }>({});
     const [loading, setLoading] = useState<boolean>(true);
-    const [pageLoader, setPageLoader] = useState<boolean>(false)
+    const [pageLoader, setPageLoader] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [page, setPage] = useState<number>(1);
@@ -33,7 +35,9 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const [currentCategoryId, setCurrentCategoryId] = useState<number>(category_id);
     const perPageProduct = 8;
     const totalPages = Math.ceil(totalCount / perPageProduct);
-    var cacheKey: string = `${page}-${sortData}-${filterCounter.toString()}`;
+
+    const cacheKey = useMemo(() => `${page}-${sortData}-${filterCounter}`, [page, sortData, filterCounter]);
+
     async function fetchProducts(fetchFunction: () => Promise<void>, loader: (state: boolean) => void) {
         loader(true); // Start loading
         await fetchFunction();
@@ -66,15 +70,15 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
 
     const fetchProductsWithFilter = useCallback(async () => {
         if (!sidebarFilter) return;
-    
+
         const filterFromFunction = transformDataIntoFilter(sidebarFilter);
         if (!filterFromFunction) {
             await CategoryDataget();
             return;
         }
-    
+
         filterFromFunction['category_id'] = { eq: currentCategoryId };
-    
+
         try {
             const response = await magentoGraphQl(
                 '',
@@ -98,13 +102,14 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             setError('Failed to fetch products');
         }
     }, [sidebarFilter, CategoryDataget, cacheKey, currentCategoryId, perPageProduct, sortData]);
+
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
 
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setLoading);
         }
-    }, [category_id]);
+    }, [category_id, cacheKey]);
 
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
@@ -112,14 +117,18 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setPageLoader);
         }
-    }, [page, sortData]);
+    }, [page, sortData, cacheKey]);
 
     useEffect(() => {
         fetchProducts(fetchProductsWithFilter, setPageLoader);
-    }, [sidebarFilter]);
+    }, [sidebarFilter, fetchProductsWithFilter]);
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
     };
 
     if (loading) return <SkeletonLoader />;
@@ -132,7 +141,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                 <div className="false w-full h-screen bg-black bg-opacity-40 z-40 left-0 top-0 fixed" onClick={() => setMobileSidebar(!mobileSidebar)}></div>
             )}
             <div className="flex">
-                <div className={`${mobileSidebar == true ? 'left-0' : '-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-5`}>
+                <div className={`${mobileSidebar ? 'left-0' : '-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-5`}>
                     <div className="lg:mt-2">
                         <div className="layered pt-4 px-3 lg:px-4 lg:py-3">
                             {/* Your sidebar content here */}
@@ -152,11 +161,11 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                             <div className="flex gap-2 items-center">
                                 <div className="border px-2 py-1.5 block lg:hidden">
                                     <button onClick={() => setMobileSidebar(!mobileSidebar)}>
-                                        <svg className="stroke-gray-600 font-extralight" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"></path></svg>
+                                        <svg className="stroke-gray-600 font-extralight" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"></path></svg>
                                     </button>
                                 </div>
                                 <div className="hidden sm:flex">
-                                    <select className=" py-1 border appearance-none border-base-100 focus:outline-none text-base-300 svg_icon cursor-pointer capitalize" onChange={e => setSortData(e.target.value)} value={sortData}>
+                                    <select className="py-1 border appearance-none border-base-100 focus:outline-none text-base-300 svg_icon cursor-pointer capitalize" onChange={e => setSortData(e.target.value)} value={sortData}>
                                         <option value="position">Position</option>
                                         <option value="name">Product Name</option>
                                         <option value="price">Price</option>
@@ -165,10 +174,10 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-2 gap-y-2 sm:gap-x-4 sm:gap-y-4 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-4">
-                            {products.length === 0 ? (
+                            {products?.length === 0 ? (
                                 <div className="col-span-full text-center text-gray-500">No products available</div>
                             ) : (
-                                products.map((product) => (
+                                products?.map((product) => (
                                     <div key={product.id}>
                                         <div className="group rounded-md sm:p-4 p-3 w-full h-full relative group overflow-hidden border border-gray-200 hover:shadow-[0_3px_15px_-1px_rgba(0,0,0,0.1)] false">
                                             <form action="" onSubmit={(e) => handleAddToCart(e, product.id)}>
@@ -243,24 +252,24 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             </div>
         </>
     );
-    
+
     interface AddToCartPayload {
         parentSku: string;
         sku: string;
         quantity: number;
         cartId: string | null;
     }
-    
+
     function handleAddToCart(event: React.FormEvent<HTMLFormElement>, productId: number) {
         event.preventDefault();
-    
+
         const formData = new FormData(event.currentTarget);
         const formValues: Record<string, FormDataEntryValue> = {};
-    
+
         let missingRadioSelection = false;
-    
+
         const radioInputs = Array.from(event.currentTarget.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
-    
+
         // Check for missing radio selections
         const radioNames = new Set(radioInputs.map(input => input.name));
         radioNames.forEach(name => {
@@ -268,36 +277,35 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                 missingRadioSelection = true;
             }
         });
-    
+
         if (missingRadioSelection) {
             alert('Please select all required options before adding the product to the cart.');
             return;
         }
-    
+
         // Collect form data
         formData.forEach((value, key) => {
             formValues[key] = value;
         });
-    
-        const product = products.find(product => product.id === productId);
+
+        const product = products?.find(product => product.id === productId);
         if (!product) {
             console.error('Product not found');
             return;
         }
-        const matchingVariant = product.variants?.find((variant:Variant) =>
+        const matchingVariant = product.variants?.find((variant: Variant) =>
             Object.entries(formValues).every(([key, value]) =>
-                variant.attributes.some((attr: Attribute)=> attr.code === key && attr.value_index == value)
+                variant.attributes.some((attr: Attribute) => attr.code === key && attr.value_index == value)
             )
         );
-    
+
         const addToCartPayload: AddToCartPayload = {
             parentSku: product.sku,
             sku: matchingVariant?.product.sku || 'No matching product found',
             quantity: 1,
             cartId: null
         };
-    
+
         console.log(addToCartPayload);
     }
-    
 }

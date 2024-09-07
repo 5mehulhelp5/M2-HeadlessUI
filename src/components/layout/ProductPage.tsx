@@ -108,56 +108,54 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
                     <div className="w-full">
                         <div className="grid grid-cols-1 md:grid-cols-8 gap-5 sm:gap-9 lg:gap-10 xl:gap-7 md:px-0">
                             <div className="col-span-full sm:col-span-1 md:col-span-4 md:mt-0 mt-6">
-                                <div className="w-full">
-                                    <Swiper
-                                        style={{
-                                            '--swiper-navigation-color': '#222222',
-                                            '--swiper-pagination-color': '#222222',
-                                            '--font-size': '10px',
-                                            '--swiper-navigation-size': '24px'
-                                        } as React.CSSProperties} 
-                                        loop={true}
-                                        spaceBetween={10}
-                                        navigation={true}
-                                        thumbs={{ swiper: thumbsSwiper }}
-                                        modules={[FreeMode, Navigation, Thumbs]}
-                                        className='w-[478px] product-gallery'
-                                    >
-                                        {product.media_gallery.map((media) => (
-                                            <SwiperSlide key={media.label}>
-                                                <Image
-                                                    src={media.url}
-                                                    alt={media.label}
-                                                    className="w-full"
-                                                    width={400}
-                                                    height={400}
-                                                />
-                                            </SwiperSlide>
-                                        ))}
-                                    </Swiper>
-                                    <Swiper
-                                        onSwiper={setThumbsSwiper}
-                                        loop={true}
-                                        spaceBetween={1}
-                                        slidesPerView={product.media_gallery.length}
-                                        freeMode={true}
-                                        watchSlidesProgress={true}
-                                        modules={[FreeMode, Navigation, Thumbs]}
-                                        className="mySwiper my-4 "
-                                    >
-                                        {product.media_gallery.map((media) => (
-                                            <SwiperSlide className="!w-max" key={media.label}>
-                                                <Image
-                                                    src={media.url}
-                                                    alt={media.label}
-                                                    className="rounded-lg shadow-md"
-                                                    width={100}
-                                                    height={100}
-                                                />
-                                            </SwiperSlide>
-                                        ))}
-                                    </Swiper>
-                                </div>
+                                <Swiper
+                                    style={{
+                                        '--swiper-navigation-color': '#222222',
+                                        '--swiper-pagination-color': '#222222',
+                                        '--font-size': '10px',
+                                        '--swiper-navigation-size': '24px'
+                                    } as React.CSSProperties}
+                                    loop={true}
+                                    spaceBetween={10}
+                                    navigation={true}
+                                    thumbs={{ swiper: thumbsSwiper }}
+                                    modules={[FreeMode, Navigation, Thumbs]}
+                                    className=' product-gallery'
+                                >
+                                    {product.media_gallery.map((media) => (
+                                        <SwiperSlide key={media.label}>
+                                            <Image
+                                                src={media.url}
+                                                alt={media.label}
+                                                className="w-full"
+                                                width={400}
+                                                height={400}
+                                            />
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                                <Swiper
+                                    onSwiper={setThumbsSwiper}
+                                    loop={true}
+                                    spaceBetween={1}
+                                    slidesPerView={product.media_gallery.length}
+                                    freeMode={true}
+                                    watchSlidesProgress={true}
+                                    modules={[FreeMode, Navigation, Thumbs]}
+                                    className="mySwiper my-4 "
+                                >
+                                    {product.media_gallery.map((media) => (
+                                        <SwiperSlide className="!w-max" key={media.label}>
+                                            <Image
+                                                src={media.url}
+                                                alt={media.label}
+                                                className="rounded-lg shadow-md"
+                                                width={120}
+                                                height={120}
+                                            />
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
                             </div>
                             <div className="col-span-full sm:col-span-1 md:col-span-4">
                                 <form action="[product-url]">
