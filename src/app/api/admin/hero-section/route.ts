@@ -6,8 +6,8 @@ import { stat, mkdir, writeFile } from "fs/promises";
 import { ResultSetHeader } from 'mysql2';
 
 // Ensure these are set in your environment variables
-const secret = process.env.NEXTAUTH_SECRET!;
-const tableName = process.env.HERO_SECTION!;
+const secret = process.env.NEXTAUTH_SECRET! || 'secreat';
+const tableName = process.env.HERO_SECTION! || 'm2_hero_section';
 
 // Handle POST requests
 export async function POST(req: NextRequest) {
