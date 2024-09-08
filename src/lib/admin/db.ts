@@ -2,10 +2,10 @@
 import mysql from 'mysql2/promise';
 
 const connection = mysql.createPool({
-  host: 'sql208.epizy.com',
-  user: 'epiz_32064705',
-  password: 'qg7eSdWThXQEl',
-  database: 'epiz_32064705_magento'
+  host: 'm2-hedlessui.cpguoai6qub6.ap-south-1.rds.amazonaws.com',
+  user: 'admin',
+  password: 'dSi49B9ABnqRS6EKEHOY',
+  database: 'magento'
 });
 
 export default connection;
