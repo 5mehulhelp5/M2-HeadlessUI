@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { ProgressBarLink } from './context/progress-bar';
 import magenntoGraphQl from '@/lib/magento/graphQl/magentoGraphQl';
 import category from '@/lib/magento/queries/category';
 
@@ -29,9 +29,9 @@ const MenuLastChildItems: React.FC<{ items: MenuItem[], hoverIndex: number | nul
           onMouseEnter={() => setHoverIndex(item.id)}
           onMouseLeave={() => setHoverIndex(null)}
         >
-          <Link legacyBehavior key={item.id} href={`/${item.url_path}`}>
-            <a>{item.name}</a>
-          </Link>
+          <ProgressBarLink key={item.id} href={`/${item.url_path}`}>
+            {item.name}
+          </ProgressBarLink>
 
           {item.children_count > 0 && (
             <ul className={`absolute bg-gray-100 left-[88px] p-2 w-max top-0 transition duration-150 ease-in-out origin-top-left py-2 px-2 ${item.id === hoverIndex ? 'scale-100' : 'scale-0'}`}>
@@ -54,9 +54,9 @@ const MenuChildItems: React.FC<{ items: MenuItem[], hoverIndex: number | null, s
           onMouseEnter={() => setHoverIndex(item.id)}
           onMouseLeave={() => setHoverIndex(null)}
         >
-          <Link legacyBehavior key={item.id} href={`/${item.url_path}`} className={`font-semibold block hover:text-primary hover:underline`}>
-            <a>{item.name}</a>
-          </Link>
+          <ProgressBarLink key={item.id} href={`/${item.url_path}`} className={`font-semibold block hover:text-primary hover:underline`}>
+            {item.name}
+          </ProgressBarLink>
           {item.children_count > 0 && (
             <ul className={`absolute bg-gray-100 left-[88px] p-2 w-max top-0 transition duration-150 ease-in-out origin-top-left py-2 px-2 ${item.id === hoverIndex ? 'scale-100' : 'scale-0'}`}>
               <MenuLastChildItems items={item.children} hoverIndex={hoverIndex} setHoverIndex={setHoverIndex} />
@@ -78,9 +78,9 @@ const MenuItems: React.FC<{ items: MenuItem[] }> = ({ items }) => {
           className={`hover:border-primary border-b-2 border-transparent ${item.children_count > 0 ? 'group inline-block' : 'false'}`}
           key={item.id}
         >
-          <Link legacyBehavior key={item.id} href={`/${item.url_path}`} className={`outline-none focus:outline-none py-3 rounded-sm flex items-center hover:text-primary font-semibold hover:underline`}>
-            <a>{item.name}</a>
-          </Link>
+          <ProgressBarLink key={item.id} href={`/${item.url_path}`} className={`outline-none focus:outline-none py-3 rounded-sm flex items-center hover:text-primary font-semibold hover:underline`}>
+            {item.name}
+          </ProgressBarLink>
 
           {item.children_count > 0 && (
             <ul

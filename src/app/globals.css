@@ -65,3 +65,9 @@ body {
   border-radius: 15px;
   background-color: #f5d9d9;
  }
+ .btn-primary{
+  @apply p-2 bg-primary text-white border border-primary font-bold py-2 px-4 rounded hover:bg-secondary hover:text-primary transition-all ease-in duration-150;
+ }
+ .btn-secondary{
+  @apply p-2 bg-secondary text-primary border border-primary font-bold py-2 px-4 rounded hover:bg-primary hover:text-white transition-all ease-in duration-150;
+ }

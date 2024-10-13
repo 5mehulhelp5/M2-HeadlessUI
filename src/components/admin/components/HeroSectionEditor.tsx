@@ -27,7 +27,7 @@ export default function HeroSectionEditor({ slide }: { slide: any }) {
                     setDescription(description);
                     setButtonText(buttonText);
                     setImageUrl(imageUrl);
-                    setPreviewImage(`http://localhost:3000/${imageUrl}`);
+                    setPreviewImage(`${imageUrl}`);
                     setSlideId(id);
                 } catch (error) {
                     console.error('Error fetching slide data:', error);

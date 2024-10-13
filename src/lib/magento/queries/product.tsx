@@ -4,6 +4,10 @@ export function getProductId() {
   products(filter: { url_key: { eq: $url_key } }) {
     items {
      id
+     name
+     meta_description
+     meta_title
+     meta_keyword
   }
 }
 }
