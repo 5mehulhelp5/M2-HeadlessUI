@@ -6,15 +6,18 @@ import getProductFilterByCategory from '@/lib/magento/queries/getProductFilterBy
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ProductOfCategory, Variant, Attribute } from '@/lib/types';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
-import PageLoader from '@/components/skelton/PageLoader';
+import { useLoader } from '@/components/context/PageLoaderContext';
 import Price from '../object/Price';
 import ConfigurableOptions from '../object/ConfigurableOption';
 import SidebarFilter from '../object/SidebarFilter';
 import { decode } from 'html-entities';
 import { ProductSearch } from '@/lib/magento/queries/category';
 import { transformDataIntoFilter } from '@/lib/magento/function/MakeSIdebarFilter';
-import { useRouter, useSearchParams } from 'next/navigation';
-
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import {
+    ChevronDownIcon
+} from '@heroicons/react/16/solid';
+import { useAuth } from '@/components/customer/authenticate/AuthProvider';
 interface CategoryProductProps {
     category_id: number;
     page?: number;
@@ -24,6 +27,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const [productCache, setProductCache] = useState<{ [page: string]: ProductOfCategory[] }>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [pageLoader, setPageLoader] = useState<boolean>(false);
+    const { showLoader, hideLoader } = useLoader();
     const [error, setError] = useState<string | null>(null);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [page, setPage] = useState<number>(1);
@@ -33,15 +37,17 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const [sidebarFilter, setSidebarFilter] = useState<Record<string, string[]> | null>(null);
     const [filterCounter, setFilterCounter] = useState<number>(0);
     const [currentCategoryId, setCurrentCategoryId] = useState<number>(category_id);
-    const perPageProduct = 8;
+    const perPageProduct = 12;
     const totalPages = Math.ceil(totalCount / perPageProduct);
-
+    const { isLogin, cartId, user, guestCartId, createEmptyCart } = useAuth();
     const cacheKey = useMemo(() => `${page}-${sortData}-${filterCounter}`, [page, sortData, filterCounter]);
-
+    // var cacheKey: string = `${page}-${sortData}-${filterCounter.toString()}`;
     async function fetchProducts(fetchFunction: () => Promise<void>, loader: (state: boolean) => void) {
         loader(true); // Start loading
+        showLoader();
         await fetchFunction();
         loader(false); // End loading
+        hideLoader();
     }
 
     async function CategoryDataget() {
@@ -68,7 +74,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         }
     }
 
-    const fetchProductsWithFilter = useCallback(async () => {
+    async function fetchProductsWithFilter() {
         if (!sidebarFilter) return;
 
         const filterFromFunction = transformDataIntoFilter(sidebarFilter);
@@ -101,7 +107,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         } catch (err) {
             setError('Failed to fetch products');
         }
-    }, [sidebarFilter, CategoryDataget, cacheKey, currentCategoryId, perPageProduct, sortData]);
+    }
 
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
@@ -109,7 +115,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setLoading);
         }
-    }, [category_id, cacheKey]);
+    }, [category_id]);
 
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
@@ -117,24 +123,30 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
         if (shouldFetch) {
             fetchProducts(CategoryDataget, setPageLoader);
         }
-    }, [page, sortData, cacheKey]);
+    }, [page, sortData]);
 
     useEffect(() => {
         fetchProducts(fetchProductsWithFilter, setPageLoader);
-    }, [sidebarFilter, fetchProductsWithFilter]);
+    }, [sidebarFilter]);
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        });
+        setTimeout(() => {
+            const categoryDiv = document.getElementById('category-page');
+            if (categoryDiv) {
+                window.scroll({
+                    top: categoryDiv.offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        },);
     };
 
     if (loading) return <SkeletonLoader />;
     if (error) return <div className="col-span-full text-center text-red-500">{error}</div>;
 
     const products = productCache[cacheKey] ?? Object.values(productCache).pop();
+
     return (
         <>
             {mobileSidebar && (
@@ -152,8 +164,8 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                     </div>
                 </div>
                 <div className="w-full">
-                    {pageLoader && (<PageLoader />)}
-                    <div className="mt-2">
+
+                    <div className="mt-2" id="category-page">
                         <div className="flex justify-between items-center py-2">
                             <div>
                                 <p>{`Items ${((page - 1) * perPageProduct) + 1}-${Math.min(page * perPageProduct, totalCount)} of ${totalCount}`}</p>
@@ -165,11 +177,29 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                     </button>
                                 </div>
                                 <div className="hidden sm:flex">
-                                    <select className="py-1 border appearance-none border-base-100 focus:outline-none text-base-300 svg_icon cursor-pointer capitalize" onChange={e => setSortData(e.target.value)} value={sortData}>
-                                        <option value="position">Position</option>
-                                        <option value="name">Product Name</option>
-                                        <option value="price">Price</option>
-                                    </select>
+                                    <Menu>
+                                        <MenuButton className="inline-flex items-center gap-2 rounded-md bg-gray-200  py-1.5 px-3 text-md font-semibold text-black shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-250 data-[open]:bg-gray-250 data-[focus]:outline-1 data-[focus]:outline-white">
+                                            {sortData === 'position' && <span>Position</span>}
+                                            {sortData === 'name' && <span>Product Name</span>}
+                                            {sortData === 'price' && <span>Price</span>}
+                                            <ChevronDownIcon className="size-5" />
+                                        </MenuButton>
+                                        <MenuItems
+                                            transition
+                                            anchor="bottom end"
+                                            className="w-52 origin-top-right rounded-xl border border-white/5 p-1 text-md text-black bg-[#f5d9d9] transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] data-[closed]:scale-95 data-[closed]:opacity-0"
+                                        >
+                                            <MenuItem>
+                                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 hover:bg-white data-[focus]:bg-white" onClick={e => setSortData('position')}>Position</button>
+                                            </MenuItem>
+                                            <MenuItem>
+                                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white hover:bg-white" onClick={e => setSortData('name')}>Product Name</button>
+                                            </MenuItem>
+                                            <MenuItem>
+                                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white hover:bg-white" onClick={e => setSortData('price')}>Price</button>
+                                            </MenuItem>
+                                        </MenuItems>
+                                    </Menu>
                                 </div>
                             </div>
                         </div>
@@ -211,17 +241,17 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                     <div className="sm:flex hidden justify-between gap-1 absolute w-full h-10 left-0 -bottom-[120px] group-hover:bottom-[2px] transition-all duration-300 ease-in-out bg-white">
                                                         {product.type_id == "downloadable" && (
                                                             <Link href={`/${product.url_key}`} className="w-full">
-                                                                <button className="bg-primary hover:bg-secondary p-2 rounded-[3px] text-white w-full flex justify-center">
-                                                                    <span>Product Details</span>
+                                                                <button className="btn-primary w-full">
+                                                                    Product Details
                                                                 </button>
                                                             </Link>
                                                         )}
                                                         {product.type_id !== "downloadable" && (
                                                             <button
-                                                                className="bg-primary hover:bg-secondary p-2 rounded-[3px] text-white w-full flex justify-center"
+                                                                className="btn-primary w-full"
                                                                 type="submit"
                                                             >
-                                                                <span>Add to Cart</span>
+                                                                Add to Cart
                                                             </button>
                                                         )}
                                                     </div>
@@ -255,12 +285,12 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
 
     interface AddToCartPayload {
         parentSku: string;
-        sku: string;
+        sku: string | null;
         quantity: number;
         cartId: string | null;
     }
 
-    function handleAddToCart(event: React.FormEvent<HTMLFormElement>, productId: number) {
+    async function handleAddToCart(event: React.FormEvent<HTMLFormElement>, productId: number) {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
@@ -298,14 +328,25 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                 variant.attributes.some((attr: Attribute) => attr.code === key && attr.value_index == value)
             )
         );
+        if (cartId != null && isLogin) {
+            const addToCartPayload: AddToCartPayload = {
+                parentSku: product.sku,
+                sku: matchingVariant?.product.sku || 'No matching product found',
+                quantity: 1,
+                cartId: cartId
+            };
+            console.log(addToCartPayload);
 
-        const addToCartPayload: AddToCartPayload = {
-            parentSku: product.sku,
-            sku: matchingVariant?.product.sku || 'No matching product found',
-            quantity: 1,
-            cartId: null
-        };
+        } else {
+            const guestCart = guestCartId || await createEmptyCart();
+            const addToCartPayload: AddToCartPayload = {
+                parentSku: product.sku,
+                sku: matchingVariant?.product.sku || null,
+                quantity: 1,
+                cartId: guestCart
+            };
+            console.log(addToCartPayload);
+        }
 
-        console.log(addToCartPayload);
     }
 }

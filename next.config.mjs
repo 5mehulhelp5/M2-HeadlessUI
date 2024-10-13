@@ -9,7 +9,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['demo.hyva.io'], // Add any additional domains you need here
+    domains: ['demo.hyva.io','m246.local'], // Add any additional domains you need here
   },
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client','bcrypt']

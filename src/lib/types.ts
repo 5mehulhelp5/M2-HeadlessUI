@@ -205,3 +205,16 @@ export interface SidebarFilterProps {
   filters: FilterCategories[];
   setSidebarFilter: any
 }
+// Define the types for the GraphQL responses
+export interface CmsPage {
+  identifier: string;
+  title: string;
+}
+
+export interface GetCmsPagesResponse {
+  getCmsPages: CmsPage[];
+}
+
+export interface MagentoGraphQlResponse<T> {
+  data: T;
+}

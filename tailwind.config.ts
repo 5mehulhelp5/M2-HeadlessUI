@@ -18,6 +18,7 @@ const config: Config = {
       },
       colors: {
         primary: '#FF0000', // Add your red color here
+        secondary: '#fff', // Add your white color here
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

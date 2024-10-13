@@ -1,5 +1,10 @@
+"use client";
 import { Hourglass } from "react-loader-spinner"
-export default function PageLoader() {
+import { useLoader } from "@/components/context/PageLoaderContext"
+const PageLoader: React.FC = () => {
+    const { loading } = useLoader();
+
+    if (!loading) return null;
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center scale-100 ">
             <div className="absolute inset-0 bg-white transition-opacity duration-500 opacity-50">
@@ -17,4 +22,5 @@ export default function PageLoader() {
             </div>
         </div>
     )
-} 
+}
+export default PageLoader;

@@ -1,18 +1,28 @@
+"use client";
 import Image from "next/image";
-import Link from "next/link";
-import Input from "postcss/lib/input";
+import { ProgressBarLink } from "@/components/context/progress-bar";
+import { useSignInDialog } from "@/components/context/SignInDialog";
+import { useAuth } from "@/components/customer/authenticate/AuthProvider";
+import { useNotification } from "./context/NotificationContext";
 export default function Header() {
+    const { openDialog, closeDialog } = useSignInDialog();
+    const { user, isLogin, logout } = useAuth();
+    const { showNotification } = useNotification();
+    function UserLogout() {
+        logout();
+        showNotification('User is Successfully Logout', 'success', 3000);
+    }
     return (
         <div className="container mx-auto flex md:flex-row justify-between flex-col py-4 items-center">
             <div className="logo">
-                <Link href="/">
+                <ProgressBarLink href="/">
                     <Image src="/logo/m2logo.svg"
                         title="logo"
                         alt="Magento Headless Commerce"
                         width={189}
                         height={83}
                     />
-                </Link>
+                </ProgressBarLink>
             </div>
             <div>
                 <div className="relative">
@@ -37,13 +47,33 @@ export default function Header() {
                             </a>
 
                             <ul className="bg-white box-shadow transform scale-0 group-hover:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32 py-1 px-2 z-20 rounded-sm">
-                                <li className="px-2 py-1 text-base border-b border-gray-300">
-                                    <a href="#" className="text-black">Sign In </a></li><li className="px-2 py-1 text-base">
-                                    <a href="#" className="text-black">Sign Up</a></li></ul></div></div><div className="px-3 text-2xl pt-2 block md:hidden">
+                                {!isLogin && (
+                                    <>
+                                        <li className="px-2 py-1 text-base border-b border-gray-300">
+                                            <button onClick={openDialog} className="text-black">Sign In </button>
+                                        </li>
+                                        <li className="px-2 py-1 text-base">
+                                            <ProgressBarLink className="text-black" href="/customer/account/create" >Sign Up</ProgressBarLink>
+                                        </li>
+                                    </>
+                                )}
+                                {isLogin && (<>
+                                    <li className="px-2 py-1 text-base border-b border-gray-300">
+                                        <ProgressBarLink className="text-black" href="/customer/account" >My Account</ProgressBarLink>
+                                    </li>
+                                    <li className="px-2 py-1 text-base">
+                                        <button onClick={UserLogout} className="text-black">Log Out </button>
+                                    </li>
+                                </>)}
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="px-3 text-2xl pt-2 block md:hidden">
                         <div className="group inline-block">
                             <a href="#" ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path></svg></a></div></div>
-                    <div className="border-l-2 border-gray-300 h-5"></div><div className="pl-3 pr-0 text-2xl"><a href=""  className="hover:text-primary text-black relative"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000000"><path d="M6 2L3 6v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3.8 6h16.4M16 10a4 4 0 1 1-8 0"></path></svg></a></div></div>
+                    <div className="border-l-2 border-gray-300 h-5"></div><div className="pl-3 pr-0 text-2xl"><a href="" className="hover:text-primary text-black relative"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000000"><path d="M6 2L3 6v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3.8 6h16.4M16 10a4 4 0 1 1-8 0"></path></svg></a></div></div>
             </div>
+
         </div>
     )
 }

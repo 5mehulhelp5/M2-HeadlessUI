@@ -1,11 +1,9 @@
 'use client';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import './style.css';
 import Slider from 'react-slick';
 import { useState, useEffect } from 'react';
-import { ChevronLeftIcon,ChevronRightIcon } from '@heroicons/react/20/solid';
-import next from 'next';
-
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import Image from 'next/image';
 interface Slide {
     imageUrl: string;
     title: string;
@@ -29,12 +27,23 @@ const HeroSlider = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/api/admin/hero-section/');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                setSlides(data.data);
+                // const response = await fetch('/api/admin/hero-section/');
+                // if (!response.ok) {
+                //     throw new Error('Network response was not ok');
+                // }
+                // const data = await response.json();
+                setSlides([{
+                    imageUrl: "/images/H_Heroside1_2_6_24.webp",
+                    title: "string",
+                    description: "string",
+                    buttonText: "string",
+                },
+                {
+                    imageUrl: "/images/H_Heroside2_2_6_24.webp",
+                    title: "string",
+                    description: "string",
+                    buttonText: "string",
+                }]);
             } catch (error) {
                 setError('There was a problem with the fetch operation.');
                 console.error(error);
@@ -45,9 +54,29 @@ const HeroSlider = () => {
 
         fetchData();
     }, []);
-
+    function NextArrow(props: any) {
+        const { className, style, onClick } = props;
+        return (
+            <div
+                className={className}
+                style={{ ...style, display: "block",color: "black",background: "bisque" }}
+                onClick={onClick}
+            >
+                <ChevronRightIcon className="w-15 h-15" /></div>
+        );
+    }
+    function PrevArrow(props: any) {
+        const { className, style, onClick } = props;
+        return (
+            <div
+                className={className}
+                style={{ ...style, display: "block",color: "black",background: "bisque"}}
+                onClick={onClick}
+            ><ChevronLeftIcon className="w-15 h-15" /></div>
+        );
+    }
     const settings = {
-        dots: false,
+        dots: true,
         infinite: true,
         speed: 500,
         slidesToShow: 1,
@@ -57,6 +86,8 @@ const HeroSlider = () => {
         arrows: true,
         pauseOnHover: true,
         fade: true,
+        nextArrow: <NextArrow />,
+        prevArrow: <PrevArrow />,
     };
 
     if (loading) return <div className="w-full h-screen"><SkeletonLoader /></div>;
@@ -64,18 +95,20 @@ const HeroSlider = () => {
     if (slides.length === 0) return <div>No slides available</div>;
 
     return (
-        <div className="w-full h-screen relative pt-2 my-auto">
+        <div className="w-full my-auto">
             <Slider {...settings}>
                 {slides.map((slide, index) => (
-                    <div key={index} className="relative w-full h-screen">
+                    <div key={index} className=" w-full h-full">
                         {/* Use a skeleton loader while the image is loading */}
-                        <img
+                        <Image
                             src={slide.imageUrl}
                             alt={`Slide ${index}`}
                             className="object-cover w-full h-full"
                             onLoad={(e) => {
                                 e.currentTarget.classList.remove('opacity-0');
                             }}
+                            width={1920}
+                            height={1080}
                             onError={(e) => {
                                 e.currentTarget.classList.add('hidden');
                             }}

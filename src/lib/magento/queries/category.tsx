@@ -57,8 +57,12 @@ query getCategory($url_key: String!) {
     uid
     id
     name
+    meta_description
+    meta_keywords
+    meta_title
   }
 }
+
 `};
 export function getCategoryProduct() {
   return `
