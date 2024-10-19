@@ -17,7 +17,7 @@ export default function SignInDialog() {
         password: "",
     });
     const router = useRouter();
-    console.log('token',getToken())
+    // console.log('token',getToken())
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };

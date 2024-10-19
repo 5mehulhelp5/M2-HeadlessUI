@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
-import Example from '../object/Tab';
 import Image from 'next/image';
 import Head from 'next/head'; // Import Head component
 import magentoGraphQl from '../../lib/magento/graphQl/magentoGraphQl';
@@ -32,9 +31,14 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [thumbsSwiper, setThumbsSwiper] = useState<SwiperClass | null>(null);
+    const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
 
     useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsHydrated(true);
+
+        })
         const fetchProduct = async () => {
             try {
                 const response = await magentoGraphQl('', 'GetProductDetailForATCDialog', getProductData(), { url_key: product_url });
@@ -52,9 +56,9 @@ const ProductPage: React.FC<ProductPageProps> = ({ product_url }) => {
                 setLoading(false);
             }
         };
-
-        fetchProduct();
-    }, [product_url]);
+        if (isHydrated) fetchProduct();
+        return () => clearTimeout(timer);
+    }, [isHydrated]);
 
     if (loading) return <ProductPageSkeleton />;
     if (error) return <div>{error}</div>;

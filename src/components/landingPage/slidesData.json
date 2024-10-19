@@ -1,0 +1,43 @@
+[
+    {
+      "imageUrl": "/slider/1.jpeg",
+      "title": "Summer Special Collection",
+      "description": "Explore vibrant summer fashion with exclusive deals!",
+      "buttonText": "Shop Now",
+      "htmlContent": "<div style='max-width: 32rem; margin-bottom: 1rem; color:white;'> <p style='font-size: 1.4rem; font-weight: 600; font-family: cursive;'>Starting At Only $0.5</p> <p style='font-size: 3rem; font-weight: 700; line-height: normal;'> <span style='color: #ff0000;'>SUMMER </span> SPECIAL COLLECTION</p> <p style='font-size: 0.875rem;'>Brand day flat 20% off and free shipping</p> </div>",
+      "url": "men/tops-men"
+    },
+    {
+      "imageUrl": "/slider/2.jpeg",
+      "title": "Exclusive Accessories",
+      "description": "Elevate your style with luxury fashion accessories.",
+      "buttonText": "Discover Now",
+      "htmlContent": "<div style='max-width: 32rem; margin-bottom: 1rem;color:white;'> <p style='font-size: 1.2rem; font-weight: 600; font-family: cursive;'>Latest Arrivals</p> <p style='font-size: 2.8rem; font-weight: 700; line-height: 1.2;'> <span style='color: #ff7f50;'>ACCESSORIES </span> COLLECTION</p> <p style='font-size: 0.875rem;'>Discover must-have accessories for the season.</p> </div>",
+      "url": "men/bottoms-men/shorts-men"
+    },
+    {
+      "imageUrl": "/slider/3.jpeg",
+      "title": "Winter Fashion Arrivals",
+      "description": "Stay cozy and chic with the latest winter collection.",
+      "buttonText": "Explore Winter",
+      "htmlContent": "<div style='max-width: 32rem; margin-bottom: 1rem; color:white;'> <p style='font-size: 1.3rem; font-weight: 600; font-family: sans-serif;'>Stay Warm in Style</p> <p style='font-size: 3.2rem; font-weight: 700; line-height: normal;'> <span style='color: #1e90ff;'>WINTER </span> FASHION</p> <p style='font-size: 0.875rem;'>30% off on selected winter apparel.</p> </div>",
+      "url": "men/tops-men/hoodies-and-sweatshirts-men"
+    },
+    {
+      "imageUrl": "/slider/4.jpeg",
+      "title": "Exclusive Footwear",
+      "description": "Step up your game with stylish footwear.",
+      "buttonText": "Shop Footwear",
+      "htmlContent": "<div style='max-width: 32rem; margin-bottom: 1rem;color:white;'> <p style='font-size: 1.5rem; font-weight: 600; font-family: Georgia;'>Walk with Confidence</p> <p style='font-size: 3rem; font-weight: 700; line-height: normal;'> <span style='color: #8b0000;'>FOOTWEAR </span> COLLECTION</p> <p style='font-size: 0.875rem;'>25% off on all premium footwear.</p> </div>",
+      "url": ""
+    },
+    {
+      "imageUrl": "/slider/5.jpeg",
+      "title": "Casual Apparel",
+      "description": "Find your go-to casual wear with the latest styles.",
+      "buttonText": "Shop Casual",
+      "htmlContent": "<div style='max-width: 32rem; margin-bottom: 1rem;color:white;'> <p style='font-size: 1.2rem; font-weight: 600;'>New Arrivals</p> <p style='font-size: 3rem; font-weight: 700; line-height: normal;'> <span style='color: #32cd32;'>CASUAL </span> COLLECTION</p> <p style='font-size: 0.875rem;'>Comfortable and stylish outfits for every occasion.</p> </div>",
+      "url": "women/tops-women/jackets-women"
+    }
+  ]
+  

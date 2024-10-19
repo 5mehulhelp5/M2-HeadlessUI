@@ -15,15 +15,19 @@ interface CmsPage {
   identifier: string;
   title: string;
 }
+
 const nameofCompany = process.env.M2_COMPANY_NAME || 'Magento';
+
 const Footer: React.FC = () => {
   const [links, setLinks] = useState<CmsPage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
   useEffect(() => {
-    // Set hydration state to true after the component mounts
-    setIsHydrated(true);
+    // Simulate delayed hydration with setTimeout
+    const timeout = setTimeout(() => {
+      setIsHydrated(true);
+    }); // Adjust delay as needed (500ms in this case)
 
     const fetchLinks = async () => {
       try {
@@ -35,14 +39,18 @@ const Footer: React.FC = () => {
         setLoading(false);
       }
     };
-    
-    fetchLinks();
-  }, []);
 
-  // Return null until the component is hydrated to avoid hydration mismatches
+    if (isHydrated) {
+      fetchLinks();
+    }
+
+    return () => clearTimeout(timeout); // Cleanup timeout on component unmount
+  }, [isHydrated]);
+
   if (!isHydrated) {
     return null;
   }
+
   return (
     <footer>
       <div className="bg-primary">
@@ -64,10 +72,15 @@ const Footer: React.FC = () => {
             </div>
             <div className="flex sm:space-x-4 sm:flex-row flex-col items-center">
               {loading ? (
-                <p>Loading links...</p> // Skeleton or loader for links
+                <div className="space-y-2">
+                  {/* Skeleton loaders for links */}
+                  <div className="h-4 w-24 bg-gray-300 animate-pulse"></div>
+                  <div className="h-4 w-20 bg-gray-300 animate-pulse"></div>
+                  <div className="h-4 w-28 bg-gray-300 animate-pulse"></div>
+                </div>
               ) : (
                 links.map((item, index) => (
-                  <ProgressBarLink key={index} className="!mt-0 text-black hover:text-primary" href={`/${item.identifier=='home'?'':item.identifier}`}>
+                  <ProgressBarLink key={index} className="!mt-0 text-black hover:text-primary" href={`/${item.identifier == 'home' ? '' : item.identifier}`}>
                     {item.title}
                   </ProgressBarLink>
                 ))

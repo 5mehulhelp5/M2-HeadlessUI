@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
+import "./globals.css";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Header from "@/components/Header";
-import { Suspense } from 'react';
-import "./globals.css";
 import Footer from "@/components/Footer";
-import { NotificationProvider } from "@/components/context/NotificationContext";
-import { SignInDialogProvider } from "@/components/context/SignInDialog";
-import SignInDialog from "@/components/SignInDialog";
-import { LoaderProvider } from "@/components/context/PageLoaderContext";
 import PageLoader from "@/components/skelton/PageLoader";
 import AuthProvider from "@/components/customer/authenticate/AuthProvider";
+import SignInDialog from "@/components/SignInDialog";
+import { NotificationProvider } from "@/components/context/NotificationContext";
+import { SignInDialogProvider } from "@/components/context/SignInDialog";
+import { LoaderProvider } from "@/components/context/PageLoaderContext";
 import { ProgressBar } from "@/components/context/progress-bar";
 
 export const metadata: Metadata = {
