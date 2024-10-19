@@ -1,0 +1,38 @@
+[
+    {
+        "title": "Casual Wear",
+        "image": "/category/casual.png",
+        "color": "red",
+        "url": "/men/tops-men/jackets-men"
+    },
+    {
+        "title": "Western Wear",
+        "image": "/category/western.jpg",
+        "color": "white",
+        "url": "/women/tops-women/jackets-women"
+    },
+    {
+        "title": "Ethnic Wear",
+        "image": "/category/ethnic.jpeg",
+        "color": "#B85A0C",
+        "url": ""
+    },
+    {
+        "title": "Kids Wear",
+        "image": "/category/kids.png",
+        "color": "black",
+        "url": "/gear/bags"
+    },
+    {
+        "title": "Formal Wear",
+        "image": "/category/formal.png",
+        "color": "#003366",
+        "url": "/women/tops-women/hoodies-and-sweatshirts-women"
+    },
+    {
+        "title": "Sports Wear",
+        "image": "/category/sports.jpg",
+        "color": "#FF4500",
+        "url": "/men/bottoms-men/shorts-men"
+    }
+]

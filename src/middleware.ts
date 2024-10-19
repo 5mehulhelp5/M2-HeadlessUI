@@ -22,10 +22,10 @@ export default async function middleware(req: NextRequest) {
   const isPublicRoute = await publicRoutes.includes(path);
 
   const token: any = await req.cookies.get('customerToken')?.value;
-  console.log('token',token);
-  console.log('path',path);
-  console.log('isProtectedRoute',isProtectedRoute);
-  console.log('isPublicRoute',isPublicRoute);
+  // console.log('token',token);
+  // console.log('path',path);
+  // console.log('isProtectedRoute',isProtectedRoute);
+  // console.log('isPublicRoute',isPublicRoute);
   // If the route is protected and the user is not authenticated, redirect to login
   // if (isProtectedRoute && !token) {
   //   return NextResponse.redirect(new URL('/customer/account/create', req.nextUrl));

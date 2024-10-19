@@ -26,6 +26,7 @@ body {
     text-wrap: balance;
   }
 }
+
 /* Add to your global CSS file or <style> tag */
 .skeleton {
   background: #e0e0e0;
@@ -39,35 +40,47 @@ body {
   0% {
     background-color: #e0e0e0;
   }
+
   50% {
     background-color: #f5f5f5;
   }
+
   100% {
     background-color: #e0e0e0;
   }
 }
 
 .mySwiper .swiper-slide-thumb-active {
-  border:0.5px solid black;
+  border: 0.5px solid black;
   border-radius: 4px;
 }
-.mySwiper .swiper-slide{
+
+.mySwiper .swiper-slide {
   margin-left: 5px;
   cursor: pointer;
 }
-.product-gallery.swiper .swiper-button-prev::after{
- padding: 10px;
- border-radius: 15px;
- background-color: #f5d9d9;
-}
-.product-gallery.swiper .swiper-button-next::after{
+
+.product-gallery.swiper .swiper-button-prev::after {
   padding: 10px;
   border-radius: 15px;
   background-color: #f5d9d9;
- }
- .btn-primary{
+}
+
+.product-gallery.swiper .swiper-button-next::after {
+  padding: 10px;
+  border-radius: 15px;
+  background-color: #f5d9d9;
+}
+
+.btn-primary {
   @apply p-2 bg-primary text-white border border-primary font-bold py-2 px-4 rounded hover:bg-secondary hover:text-primary transition-all ease-in duration-150;
- }
- .btn-secondary{
+}
+
+.btn-secondary {
   @apply p-2 bg-secondary text-primary border border-primary font-bold py-2 px-4 rounded hover:bg-primary hover:text-white transition-all ease-in duration-150;
- }
+}
+
+.slick-prev,
+.slick-next {
+  @apply md:w-[25%] md:h-[25%];
+}

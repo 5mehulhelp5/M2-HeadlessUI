@@ -1,6 +1,6 @@
 "use client";
 import Image from 'next/image';
-import Link from 'next/link';
+import { ProgressBarLink } from '@/components/context/progress-bar';
 import magentoGraphQl from '@/lib/magento/graphQl/magentoGraphQl';
 import getProductFilterByCategory from '@/lib/magento/queries/getProductFilterByCategory';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -40,6 +40,8 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
     const perPageProduct = 12;
     const totalPages = Math.ceil(totalCount / perPageProduct);
     const { isLogin, cartId, user, guestCartId, createEmptyCart } = useAuth();
+    const [isFirst, setIsFirst] = useState<boolean>(false);
+    const [isHydrated, setIsHydrated] = useState<boolean>(false);
     const cacheKey = useMemo(() => `${page}-${sortData}-${filterCounter}`, [page, sortData, filterCounter]);
     // var cacheKey: string = `${page}-${sortData}-${filterCounter.toString()}`;
     async function fetchProducts(fetchFunction: () => Promise<void>, loader: (state: boolean) => void) {
@@ -69,6 +71,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             if (!categoryFilter) {
                 setCategoryFilter(response.data?.products?.aggregations);
             }
+            if (isFirst == false) setIsFirst(true);
         } catch (err) {
             setError('Failed to fetch products');
         }
@@ -111,22 +114,29 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
 
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
-
-        if (shouldFetch) {
-            fetchProducts(CategoryDataget, setLoading);
+        const timer = setTimeout(() => {
+            setIsHydrated(true);
+        })
+        if (isHydrated) {
+            if (shouldFetch) {
+                fetchProducts(CategoryDataget, setLoading);
+            }
         }
-    }, [category_id]);
+        return () => clearTimeout(timer);
+    }, [isHydrated]);
 
     useEffect(() => {
         const shouldFetch = !productCache[cacheKey];
 
-        if (shouldFetch) {
+        if (shouldFetch && isFirst) {
             fetchProducts(CategoryDataget, setPageLoader);
         }
     }, [page, sortData]);
 
     useEffect(() => {
-        fetchProducts(fetchProductsWithFilter, setPageLoader);
+        if (sidebarFilter != null) {
+            fetchProducts(fetchProductsWithFilter, setPageLoader);
+        }
     }, [sidebarFilter]);
 
     const handlePageChange = (newPage: number) => {
@@ -212,7 +222,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                         <div className="group rounded-md sm:p-4 p-3 w-full h-full relative group overflow-hidden border border-gray-200 hover:shadow-[0_3px_15px_-1px_rgba(0,0,0,0.1)] false">
                                             <form action="" onSubmit={(e) => handleAddToCart(e, product.id)}>
                                                 <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden xl:aspect-h-8 xl:aspect-w-7">
-                                                    <Link href={`/${product.url_key}`} className="flex justify-center">
+                                                    <ProgressBarLink href={`/${product.url_key}`} className="flex justify-center">
                                                         <Image
                                                             src={product.small_image.url}
                                                             alt={product.small_image.label}
@@ -220,12 +230,12 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                             width={209}
                                                             height={260}
                                                         />
-                                                    </Link>
+                                                    </ProgressBarLink>
                                                 </div>
                                                 <div className="product-card-details relative">
-                                                    <Link href={`/${product.url_key}`}>
+                                                    <ProgressBarLink href={`/${product.url_key}`}>
                                                         <h3 className="mt-2 mb-0 text-md font-medium text-gray-700">{decode(product.name, { level: 'html5' })}</h3>
-                                                    </Link>
+                                                    </ProgressBarLink>
                                                     <div className="flex gap-2 items-end">
                                                         <p className="mt-1 text-md font-medium text-primary">
                                                             <Price minimum_price={product.price_range.minimum_price} maximum_price={product.price_range.maximum_price} __typename={product.price_range.__typename} />
@@ -240,11 +250,11 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                     {/* Add to cart button */}
                                                     <div className="sm:flex hidden justify-between gap-1 absolute w-full h-10 left-0 -bottom-[120px] group-hover:bottom-[2px] transition-all duration-300 ease-in-out bg-white">
                                                         {product.type_id == "downloadable" && (
-                                                            <Link href={`/${product.url_key}`} className="w-full">
+                                                            <ProgressBarLink href={`/${product.url_key}`} className="w-full">
                                                                 <button className="btn-primary w-full">
                                                                     Product Details
                                                                 </button>
-                                                            </Link>
+                                                            </ProgressBarLink>
                                                         )}
                                                         {product.type_id !== "downloadable" && (
                                                             <button

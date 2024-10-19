@@ -105,14 +105,22 @@ const MagentoNavbar: React.FC<NavbarProps> = ({ menuData }) => {
 
 const Navbar = () => {
   const [menuData, setMenuData] = useState<{ categories: { items: MenuItem[] } }>({ categories: { items: [] } });
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsHydrated(true);
+    });
     const fetchData = async () => {
       const response: any = await magenntoGraphQl('', '', category({ ids: [2], pageSize: 10, currentPage: 1 }), {});
       setMenuData({ categories: response.data.categories });
     };
-    fetchData();
-  }, []);
+    if (isHydrated) {
+      fetchData();
+    }
+
+    return () => clearTimeout(timeout);
+  }, [isHydrated]);
 
   return (
     <div className='w-full main-header bg-gray-100'>

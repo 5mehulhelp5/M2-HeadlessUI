@@ -9,6 +9,7 @@ import ProductPageSkeleton from '@/components/skelton/ProductPageSkeleton';
 import SkeletonLoader from '@/components/skelton/SkeletonLoader';
 import { Suspense } from 'react';
 import { CmsPage, GetCmsPagesResponse, MagentoGraphQlResponse } from '@/lib/types';
+import { decode } from 'html-entities';
 
 
 const endpoint = `${process.env.M2_STORE_URl}/graphql`;
@@ -81,7 +82,7 @@ async function fetchData(url_key: string) {
 
 // Main Page component
 export default async function Page({ params }: { params: { page: string[] } }) {
-  const url_key = params.page[params.page.length - 1];
+  const url_key = decodeURIComponent(params.page[params.page.length - 1]);
   const { data, loadingCategory, loadingProduct, error, staticPage } = await fetchData(url_key);
 
   if (error) {
@@ -108,8 +109,6 @@ export async function generateMetadata({ params }: { params: { page: string[] } 
   const url_key = params.page[params.page.length - 1];
 
   try {
-    // const { data, loadingCategory, loadingProduct, error, staticPage } = await fetchData(url_key);
-    // Fetch category data for metadata
     const categoryResponse = await magentoGraphQl(endpoint, 'getCategory', categoryQuery(), { url_key });
 
     if (categoryResponse.data?.categoryList?.length > 0) {
@@ -158,7 +157,7 @@ function extractCategoryPaths(categories: any[]): { page: string[] }[] {
     if (category.url_path) {
       // Add the current category's URL path
       paths.push({
-        page: [category.url_path],
+        page: [decodeURIComponent(category.url_path)],
       });
     }
 
@@ -195,6 +194,7 @@ export async function generateStaticParams(): Promise<{ page: string[] }[]> {
 
     // Add category paths to the result
     paths.push(...categoryPaths);
+    console.log('paths',JSON.stringify(paths))
 
   } catch (error) {
     console.error('Error fetching paths:', error);
