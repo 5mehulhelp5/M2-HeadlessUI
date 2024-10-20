@@ -145,7 +145,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
             const categoryDiv = document.getElementById('category-page');
             if (categoryDiv) {
                 window.scroll({
-                    top: categoryDiv.offsetTop,
+                    top: 0,
                     behavior: 'smooth'
                 });
             }
@@ -163,7 +163,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                 <div className="false w-full h-screen bg-black bg-opacity-40 z-40 left-0 top-0 fixed" onClick={() => setMobileSidebar(!mobileSidebar)}></div>
             )}
             <div className="flex">
-                <div className={`${mobileSidebar ? 'left-0' : '-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-5`}>
+                <div className={`${mobileSidebar ? 'left-0' : '-left-96'} top-0 fixed z-50 lg:z-0 bg-white h-screen pr-3 lg:sticky lg:shrink-0 lg:h-full lg:pr-4 lg:block w-[300px] lg:top-[3.25rem]`}>
                     <div className="lg:mt-2">
                         <div className="layered pt-4 px-3 lg:px-4 lg:py-3">
                             {/* Your sidebar content here */}
@@ -244,7 +244,7 @@ export default function CategoryProduct({ category_id }: CategoryProductProps) {
                                                     {/* configuration option  */}
                                                     {product.type_id === 'configurable' && product.configurable_options && (
                                                         <div className="pb-12">
-                                                            <ConfigurableOptions options={product.configurable_options} isProductPage={false} />
+                                                            <ConfigurableOptions options={product.configurable_options} isProductPage={false} key={product.id} />
                                                         </div>
                                                     )}
                                                     {/* Add to cart button */}
