@@ -194,7 +194,6 @@ export async function generateStaticParams(): Promise<{ page: string[] }[]> {
 
     // Add category paths to the result
     paths.push(...categoryPaths);
-    console.log('paths',JSON.stringify(paths))
 
   } catch (error) {
     console.error('Error fetching paths:', error);

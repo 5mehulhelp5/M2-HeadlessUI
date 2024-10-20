@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from 'react';
 import "./globals.css";
 import { Inter } from "next/font/google";
-import Navbar from "@/components/Navbar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PageLoader from "@/components/skelton/PageLoader";
@@ -41,10 +40,7 @@ export default function RootLayout({
                 <PageLoader />
                 <SignInDialogProvider>
                   <SignInDialog />
-                  <header>
-                    <Header />
-                    <Navbar />
-                  </header>
+                  <Header />
                   <Suspense>
                     <main>{children}</main>
                   </Suspense>

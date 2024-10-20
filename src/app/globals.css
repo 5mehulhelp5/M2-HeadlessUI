@@ -84,3 +84,21 @@ body {
 .slick-next {
   @apply md:w-[25%] md:h-[25%];
 }
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  transition: all 0.5s ease;
+  animation: smoothScroll 0.5s forwards;
+  z-index: 20;
+}
+
+@keyframes smoothScroll {
+  0% {
+    transform: translateY(-142px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
