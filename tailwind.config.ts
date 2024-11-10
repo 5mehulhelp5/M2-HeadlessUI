@@ -31,5 +31,6 @@ const config: Config = {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
   ],
+  safelist:['md:order-1 md:order-2']
 };
 export default config;

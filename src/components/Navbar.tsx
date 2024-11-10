@@ -1,12 +1,21 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { Transition } from "@headlessui/react";
-import { ProgressBarLink } from "@/components/context/progress-bar";
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useMediaQuery } from 'react-responsive'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown, Menu, X } from 'lucide-react'
+import { ProgressBarLink } from './context/progress-bar'
 import magenntoGraphQl from "@/lib/magento/graphQl/magentoGraphQl";
 import category from "@/lib/magento/queries/category";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { usePathname } from "next/navigation";
 
+interface NavItem {
+  id: number
+  name: string
+  url_path: string
+  children_count: number
+  children: NavItem[]
+  level: number
+}
 type MenuItem = {
   id: number;
   url_path: string;
@@ -21,130 +30,208 @@ type NavbarProps = {
     items: MenuItem[];
   };
 };
-
-// Skeleton Loader Component
-const SkeletonLoader = () => (
-  <nav className="container mx-auto">
-    <ul className="flex relative z-20 justify-center gap-4 py-4 text-lg font-semibold text-gray-800">
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-      <li className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px]" />
-    </ul>
-  </nav>
-);
-
-// Recursive component for displaying subcategories
-const MenuLastChildItems: React.FC<{ items: MenuItem[] }> = ({ items }) => {
+const SkeletonLoader = () => {
   return (
-    <ul className="bg-white flex flex-col gap-4">
-      {items.map((item) => (
-        <li
-          className="hover:bg-primary hover:text-white p-2 font-medium rounded-md transition-all duration-200"
-          key={item.id}
+    <>
+      <div className="container mx-auto lg:flex hidden">
+        <ul className="flex justify-center gap-4 py-4 text-lg font-semibold text-gray-800">
+          {[...Array(6)].map((_, index) => (
+            <li
+              key={index}
+              className="py-2 px-4 rounded-md animate-pulse w-[120px] h-[40px] bg-gray-300"
+            />
+          ))}
+        </ul>
+      </div>
+      <div className="lg:hidden">
+        <Menu className="block h-8 w-8 text-black" />
+      </div>
+    </>
+  )
+};
+// MobileChild component to handle rendering children items in the mobile menu
+function MobileChild({ item, activeDropdown, setMobileMenuOpen }: { item: NavItem, activeDropdown: number | null, setMobileMenuOpen: (open: boolean) => void }) {
+  const [activeChildDropdown, setActiveChildDropdown] = useState<number | null>(null)
+
+  return (
+    <AnimatePresence>
+      {item.children.length > 0 && item.id === activeDropdown && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-gray-50 border-primary"
+          transition={{ type: "tween", duration: 0.4 }}
         >
-          <ProgressBarLink href={`/${item.url_path}`} className="block">
-            {item.name}
-          </ProgressBarLink>
-
-          {item.children_count > 0 && (
-            <ul className="bg-white p-2 shadow-lg rounded-lg">
-              <MenuLastChildItems items={item.children} />
-            </ul>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-// Component for displaying child categories
-const MenuChildItems: React.FC<{ items: MenuItem[] }> = ({ items }) => {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      {items.map((item) => (
-        <div key={item.id} className="group flex flex-col gap-8">
-          <ProgressBarLink
-            href={`/${item.url_path}`}
-            className="block font-semibold text-gray-700 hover:text-primary transition-colors duration-200"
-          >
-            {item.name}
-          </ProgressBarLink>
-
-          {item.children_count > 0 && (
-            <div className="transition-all ease-out duration-300 hidden group-hover:block">
-              <MenuLastChildItems items={item.children} />
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Main menu component for top-level categories
-const MenuItems: React.FC<{ items: MenuItem[] }> = ({ items }) => {
-  const [isOpen, setIsOpen] = useState<number | null>(null);
-  const pathname = usePathname()
-  const path = pathname.split("/")[1];
-  return (
-    <ul className="flex relative z-20 justify-center gap-4 py-4 text-lg font-semibold text-gray-800">
-      {items.map((item) => {
-        const isActive = path === item.url_path;
-        return (
-          <li
-            className={`group py-2 px-4 rounded-md hover:bg-primary hover:text-white transition-colors duration-200 ${item.children_count > 0 ? "inline-block" : ""}  ${isActive ? "border-b-2 border-primary" : ""}`}
-            key={item.id}
-            onMouseEnter={() => setIsOpen(item.id)}
-            onMouseLeave={() => setIsOpen(null)}
-          >
-            <div className="flex items-center">
-              <ProgressBarLink href={`/${item.url_path}`} className="flex flex-row items-center">
-                {item.name}
-                {item.children_count > 0 && (
-                  <span className="ml-2 transform transition-transform duration-200 group-hover:rotate-180">
-                    <ChevronDownIcon className="w-5 h-5" />
-                  </span>
-                )}
-              </ProgressBarLink>
-            </div>
-
-            {item.children_count > 0 && (
-              <Transition
-                show={isOpen === item.id}
-                enter="transition-all ease-in-out duration-500 transform"
-                enterFrom="-translate-y-10 opacity-0"
-                enterTo="translate-y-0 opacity-100"
-                leave="transition-all ease-in-out duration-400 transform"
-                leaveFrom="translate-y-0 opacity-100"
-                leaveTo="-translate-y-10 opacity-0"
-              >
-                <div className="absolute left-0 top-full w-full p-6 bg-white text-black shadow-lg rounded-lg flex flex-col z-30">
-                  <MenuChildItems items={item.children} />
+          {item.children.map((child) => (
+            <div key={child.id}>
+              {child.children_count > 0 ? (
+                <div className="flex flex-row justify-between pl-8 pr-4 py-3 border-b text-base font-medium text-gray-700 hover:text-primary hover:bg-indigo-50">
+                  <ProgressBarLink
+                    onClick={() => setMobileMenuOpen(false)}
+                    href={`/${child.url_path}`}
+                    className="block"
+                  >
+                    {child.name}
+                  </ProgressBarLink>
+                  <button
+                    onClick={() => setActiveChildDropdown(activeChildDropdown === child.id ? null : child.id)}
+                    className="border-2 px-2 rounded-lg"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-black transition-transform duration-300 ${child.id === activeChildDropdown ? 'rotate-180' : ''}`} />
+                  </button>
                 </div>
-              </Transition>
-            )}
-          </li>
-        )
-      })}
-    </ul>
-  );
-};
+              ) : (
+                <ProgressBarLink
+                  onClick={() => setMobileMenuOpen(false)}
+                  href={`/${child.url_path}`}
+                  className="block pl-12 pr-4 py-3 border-b text-base font-medium text-gray-700 hover:text-indigo-700 hover:bg-indigo-50"
+                >
+                  {child.name}
+                </ProgressBarLink>
+              )}
+              {child.children_count > 0 && (
+                <MobileChild item={child} activeDropdown={activeChildDropdown} setMobileMenuOpen={setMobileMenuOpen} />
+              )}
+            </div>
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
-const MagentoNavbar: React.FC<NavbarProps> = ({ menuData }) => {
+export function DynamicNavbar({ navItems = [] }: { navItems?: NavItem[] }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null)
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
+
+  // Use useMediaQuery to determine if the screen is large (desktop view)
+  const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' })
+
+  const toggleDropdown = (id: number) => {
+    setActiveDropdown(activeDropdown === id ? null : id)
+  }
+
   return (
-    <nav className="container mx-auto">
-      <MenuItems items={menuData.items} />
-    </nav>
-  );
-};
+    <>
+      <nav className="container mx-auto">
+        {isDesktop ? (
+          <div className="flex">
+            {navItems?.map((item) => (
+              <div
+                key={item.id}
+                className="relative"
+                onMouseEnter={() => setHoveredItem(item.id)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                {item.children?.length > 0 ? (
+                  <button className="inline-flex items-center py-2 px-4 rounded-md font-bold hover:bg-primary hover:text-white transition-colors duration-200">
+                    {item.name}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </button>
+                ) : (
+                  <ProgressBarLink
+                    href={`/${item.url_path}`}
+                    className="inline-flex items-center py-2 px-4 rounded-md font-bold hover:bg-primary hover:text-white transition-colors duration-200"
+                  >
+                    {item.name}
+                  </ProgressBarLink>
+                )}
+                <AnimatePresence>
+                  {item.children?.length > 0 && hoveredItem === item.id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 md:px-0 lg:ml-0 lg:-translate-x-1/2"
+                    >
+                      <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                        <div className="relative grid gap-6 bg-white px-5 py-6 md:gap-8 md:p-8">
+                          {item.children.map((child) => (
+                            <ProgressBarLink
+                              key={child.id}
+                              href={`/${child.url_path}`}
+                              className="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="ml-4">
+                                <p className="text-base font-medium text-gray-900">{child.name}</p>
+                              </div>
+                            </ProgressBarLink>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="-mr-2 flex items-center">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md  focus:outline-none transition-transform duration-300"
+              >
+                <span className="sr-only">Open main menu</span>
+                {mobileMenuOpen ?  <X className="block h-7 w-7 text-black" /> : <Menu className="block h-7 w-7 text-black" />}
+              </button>
+            </div>
+            <AnimatePresence>
+              {mobileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, x: -200 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -200 }}
+                  className="absolute bg-white w-full z-[1000] left-0 top-[70px] min-h-dvh"
+                  transition={{ type: "tween", duration: 0.5 }}
+                >
+                  <div className="container mx-auto pt-2 pb-3">
+                    {navItems?.map((item) => (
+                      <div key={item.id}>
+                        {item.children.length > 0 ? (
+                          <div className="flex flex-row justify-between pl-3 pr-4 py-3 text-medium border-b font-medium text-black hover:text-primary hover:bg-indigo-50">
+                            <ProgressBarLink
+                              onClick={() => setMobileMenuOpen(false)}
+                              href={`/${item.url_path}`}
+                              className="block"
+                            >
+                              {item.name}
+                            </ProgressBarLink>
+                            <button
+                              onClick={() => toggleDropdown(item.id)}
+                              className="border-2 px-2 rounded-lg hover:border-primary"
+                            >
+                              <ChevronDown className={`w-5 h-5 text-black transition-transform duration-300 hover:text-primary ${item.id === activeDropdown ? 'rotate-180 ' : ''}`} />
+                            </button>
+                          </div>
+                        ) : (
+                          <ProgressBarLink
+                            href={`/${item.url_path}`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block pl-3 pr-4 py-3 text-base font-medium text-black border-b hover:text-indigo-700 hover:bg-indigo-50 hover:border-indigo-500"
+                          >
+                            {item.name}
+                          </ProgressBarLink>
+                        )}
+                        <MobileChild item={item} activeDropdown={activeDropdown} setMobileMenuOpen={setMobileMenuOpen} />
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </nav>
+    </>
+  )
+}
 
 const Navbar = () => {
   const [menuData, setMenuData] = useState<{ categories: { items: MenuItem[] } }>({ categories: { items: [] } });
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
-
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsHydrated(true);
@@ -157,6 +244,7 @@ const Navbar = () => {
         {}
       );
       setMenuData({ categories: response.data.categories });
+      console.log(JSON.stringify(response.data.categories.items));
     };
     if (isHydrated) {
       fetchData();
@@ -165,12 +253,14 @@ const Navbar = () => {
     return () => clearTimeout(timeout);
   }, [isHydrated]);
 
+
   return (
-    <div className="w-full main-header">
+    <div className="w-max main-header lg:order-2 order-1">
       {menuData.categories.items.length === 0 ? (
+
         <SkeletonLoader />
       ) : (
-        <MagentoNavbar menuData={menuData.categories} />
+        <DynamicNavbar navItems={menuData.categories.items} />
       )}
     </div>
   );
