@@ -52,8 +52,8 @@ export default function Header() {
     return (
 
         <header className={`w-full border-b-4 border-primary transition-all duration-300 ease-out bg-gray-300 ${sticky.isSticky ? ' sticky' : ''}`} ref={headerRef}>
-            <div className="container mx-auto flex md:flex-row justify-between flex-col py-2 items-center">
-                <div className="logo">
+            <div className="container mx-auto flex md:flex-row justify-between py-2 items-center xs:px-0 px-2">
+                <div className="logo lg:order-1 order-2 pl-10 md:pl-0">
                     <ProgressBarLink href="/">
                         <Image src="/logo/logo_hd.png"
                             title="Seamless shopping, next-gen tech."
@@ -64,11 +64,9 @@ export default function Header() {
                         />
                     </ProgressBarLink>
                 </div>
-                <div>
                     <Navbar />
-                </div>
-                <div>
-                    <div className="flex items-center">
+                <div className="order-3">
+                    <div className="flex items-center ">
                         <div className="px-3 text-2xl pt-2 hidden md:block">
                             <div className="group inline-block">
                                 <a href="#" className="hover:text-primary text-black">
